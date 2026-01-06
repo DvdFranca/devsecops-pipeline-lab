@@ -1,0 +1,45 @@
+name: DevSecOps Pipeline Lab
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+jobs:
+  security-pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Baixa o código do repositório para a VM do GitHub
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2️⃣ Scan de secrets (credenciais hardcoded)
+      - name: Secrets Scan - Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+
+      # 3️⃣ SAST - Análise estática do código
+      - name: SAST - Semgrep
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: auto
+
+      # 4️⃣ SCA - Análise de dependências vulneráveis
+      - name: SCA - Dependency Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: "devsecops-pipeline-lab"
+          path: "."
+          format: "HTML"
+
+      # 5️⃣ Build da imagem Docker
+      - name: Build Docker image
+        run: docker build -t devsecops-lab:latest .
+
+      # 6️⃣ Scan da imagem Docker
+      - name: Container Scan - Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: devsecops-lab:latest
+          severity: HIGH,CRITICAL
+          exit-code: 1
