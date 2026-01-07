@@ -2,8 +2,11 @@ name: DevSecOps Pipeline Lab
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - dev
   pull_request:
+    branches:
+      - main
 
 jobs:
   security-pipeline:
@@ -31,6 +34,7 @@ jobs:
           project: "devsecops-pipeline-lab"
           path: "."
           format: "HTML"
+          failOnCVSS: 7
 
       # 5️⃣ Build da imagem Docker
       - name: Build Docker image
